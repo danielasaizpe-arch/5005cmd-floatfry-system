@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Machine" if editing else "Add Machine" }} — FloatFry MRP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ "Edit Machine" if editing else "Add New Machine" }}</h1>
+</div>
+
+<div class="form-card">
+    <form method="POST">
+        <div class="form-group">
+            <label for="name">Machine Name *</label>
+            <input type="text" id="name" name="name" value="{{ name or '' }}" required
+                   placeholder="e.g. Stamping Press A1">
+        </div>
+
+        <div class="form-group">
+            <label for="machine_type">Machine Type *</label>
+            <select id="machine_type" name="machine_type" required>
+                <option value="">-- Select Type --</option>
+                {% for t in ['Stamping Press', 'CNC Lathe', 'Polishing Unit', 'Coating Line', 'Assembly Station', 'Other'] %}
+                <option value="{{ t }}" {% if machine_type == t %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="Active" {% if status == 'Active' or not status %}selected{% endif %}>Active</option>
+                <option value="Under Maintenance" {% if status == 'Under Maintenance' %}selected{% endif %}>Under Maintenance</option>
+            </select>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {{ "Update Machine" if editing else "Add Machine" }}
+            </button>
+            <a href="{{ url_for('machines') }}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

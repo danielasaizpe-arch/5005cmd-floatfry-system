@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FloatFry MRP{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="brand">Float<span>Fry</span> MRP</div>
+        <nav>
+            <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{{ url_for('machines') }}" class="{% if request.endpoint in ('machines', 'add_machine', 'edit_machine') %}active{% endif %}">Machines</a>
+            <a href="{{ url_for('operators') }}" class="{% if request.endpoint in ('operators', 'add_operator', 'edit_operator') %}active{% endif %}">Operators</a>
+            <a href="{{ url_for('work_orders') }}" class="{% if request.endpoint in ('work_orders', 'add_work_order', 'edit_work_order') %}active{% endif %}">Work Orders</a>
+            <a href="{{ url_for('schedule') }}" class="{% if request.endpoint == 'schedule' %}active{% endif %}">Schedule</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

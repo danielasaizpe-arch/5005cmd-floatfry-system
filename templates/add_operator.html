@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Operator" if editing else "Add Operator" }} — FloatFry MRP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ "Edit Operator" if editing else "Add New Operator" }}</h1>
+</div>
+
+<div class="form-card">
+    <form method="POST">
+        <div class="form-group">
+            <label for="name">Full Name *</label>
+            <input type="text" id="name" name="name" value="{{ name or '' }}" required
+                   placeholder="e.g. James Carter">
+        </div>
+
+        <div class="form-group">
+            <label for="employee_id">Employee ID *</label>
+            <input type="text" id="employee_id" name="employee_id" value="{{ employee_id or '' }}" required
+                   placeholder="e.g. EMP-006">
+        </div>
+
+        <div class="form-group">
+            <label for="contact">Contact (email or phone)</label>
+            <input type="text" id="contact" name="contact" value="{{ contact or '' }}"
+                   placeholder="e.g. j.carter@floatfry.com">
+        </div>
+
+        <!-- Machine Certifications -->
+        <div class="form-group">
+            <label>Machine Certifications</label>
+            <p style="font-size: 0.82rem; color: var(--grey-400); margin-bottom: 0.5rem;">
+                Select which machines this operator is certified to use.
+            </p>
+            {% if machines %}
+            <div class="checkbox-group">
+                {% for machine in machines %}
+                <label>
+                    <input type="checkbox" name="certifications" value="{{ machine.id }}"
+                           {% if selected_certs and machine.id|string in selected_certs %}checked{% endif %}>
+                    {{ machine.name }} ({{ machine.machine_type }})
+                </label>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="font-size: 0.85rem; color: var(--grey-400);">
+                No machines have been added yet. <a href="{{ url_for('add_machine') }}">Add a machine first</a>.
+            </p>
+            {% endif %}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {{ "Update Operator" if editing else "Add Operator" }}
+            </button>
+            <a href="{{ url_for('operators') }}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

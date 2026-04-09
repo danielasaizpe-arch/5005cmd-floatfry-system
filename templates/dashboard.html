@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — FloatFry MRP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Dashboard</h1>
+</div>
+
+<!-- Summary Statistics -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_machines }}</div>
+        <div class="stat-label">Total Machines</div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-value">{{ stats.active_machines }}</div>
+        <div class="stat-label">Active Machines</div>
+    </div>
+    <div class="stat-card orange">
+        <div class="stat-value">{{ stats.maintenance_machines }}</div>
+        <div class="stat-label">Under Maintenance</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_operators }}</div>
+        <div class="stat-label">Total Operators</div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.pending_orders }}</div>
+        <div class="stat-label">Pending Orders</div>
+    </div>
+    <div class="stat-card orange">
+        <div class="stat-value">{{ stats.in_progress_orders }}</div>
+        <div class="stat-label">In Progress</div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-value">{{ stats.completed_orders }}</div>
+        <div class="stat-label">Completed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_orders }}</div>
+        <div class="stat-label">Total Work Orders</div>
+    </div>
+</div>
+
+<!-- Recent Work Orders -->
+<div class="card">
+    <div class="card-header">Recent Work Orders</div>
+    {% if recent_orders %}
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Machine</th>
+                <th>Operator</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Due Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in recent_orders %}
+            <tr>
+                <td>{{ order.product_name }}</td>
+                <td>{{ order.machine_name }}</td>
+                <td>{{ order.operator_name }}</td>
+                <td><span class="badge badge-{{ order.priority|lower }}">{{ order.priority }}</span></td>
+                <td>
+                    <span class="badge badge-{{ order.status|lower|replace(' ', '-') }}">
+                        {{ order.status }}
+                    </span>
+                </td>
+                <td>{{ order.due_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No work orders yet.</p>
+        <a href="{{ url_for('add_work_order') }}" class="btn btn-primary">Create First Work Order</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

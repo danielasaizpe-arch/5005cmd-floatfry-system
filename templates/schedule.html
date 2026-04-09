@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Schedule — FloatFry MRP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Production Schedule</h1>
+</div>
+
+<!-- Filters -->
+<form method="GET" action="{{ url_for('schedule') }}" class="schedule-filters">
+    <div class="form-group">
+        <label for="date_from">From Date</label>
+        <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
+    </div>
+    <div class="form-group">
+        <label for="date_to">To Date</label>
+        <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
+    </div>
+    <div class="form-group">
+        <label for="machine_id">Machine</label>
+        <select id="machine_id" name="machine_id">
+            <option value="">All Machines</option>
+            {% for m in machines %}
+            <option value="{{ m.id }}" {% if machine_id|string == m.id|string %}selected{% endif %}>
+                {{ m.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Apply Filters</button>
+        <a href="{{ url_for('schedule') }}" class="btn btn-outline" style="margin-left: 0.5rem;">Reset</a>
+    </div>
+</form>
+
+<!-- Schedule grouped by date -->
+<div class="card">
+    {% if schedule %}
+        {% set current_date = namespace(value='') %}
+        {% for entry in schedule %}
+            {% if entry.due_date != current_date.value %}
+                {% set current_date.value = entry.due_date %}
+                {% if not loop.first %}
+                    </tbody></table>
+                {% endif %}
+                <div class="date-group">{{ entry.due_date }}</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Product</th>
+                            <th>Machine</th>
+                            <th>Operator</th>
+                            <th>Qty</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            {% endif %}
+            <tr>
+                <td>#{{ entry.id }}</td>
+                <td><strong>{{ entry.product_name }}</strong></td>
+                <td>{{ entry.machine_name }}</td>
+                <td>{{ entry.operator_name }}</td>
+                <td>{{ entry.quantity }}</td>
+                <td><span class="badge badge-{{ entry.priority|lower }}">{{ entry.priority }}</span></td>
+                <td>
+                    <span class="badge badge-{{ entry.status|lower|replace(' ', '-') }}">
+                        {{ entry.status }}
+                    </span>
+                </td>
+            </tr>
+            {% if loop.last %}
+                    </tbody>
+                </table>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <p>No scheduled work orders found for the selected filters.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

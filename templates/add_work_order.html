@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Work Order" if editing else "New Work Order" }} — FloatFry MRP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ "Edit Work Order" if editing else "Create New Work Order" }}</h1>
+</div>
+
+<div class="form-card">
+    <form method="POST">
+        <div class="form-group">
+            <label for="product_name">Product Name *</label>
+            <input type="text" id="product_name" name="product_name" value="{{ product_name or '' }}" required
+                   placeholder="e.g. Premium Cast Iron Skillet">
+        </div>
+
+        <div class="form-group">
+            <label for="quantity">Quantity *</label>
+            <input type="number" id="quantity" name="quantity" value="{{ quantity or '' }}" required min="1"
+                   placeholder="e.g. 200">
+        </div>
+
+        <div class="form-group">
+            <label for="priority">Priority</label>
+            <select id="priority" name="priority">
+                {% for p in ['Low', 'Medium', 'High'] %}
+                <option value="{{ p }}" {% if priority == p %}selected{% endif %}>{{ p }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="due_date">Due Date *</label>
+            <input type="date" id="due_date" name="due_date" value="{{ due_date or '' }}" required>
+        </div>
+
+        {% if editing %}
+        <div class="form-group">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                {% for s in ['Pending', 'In Progress', 'Completed'] %}
+                <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="machine_id">Assign Machine *</label>
+            <select id="machine_id" name="machine_id" required>
+                <option value="">-- Select Machine --</option>
+                {% for m in machines %}
+                <option value="{{ m.id }}" {% if machine_id|string == m.id|string %}selected{% endif %}>
+                    {{ m.name }} ({{ m.machine_type }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="operator_id">Assign Operator *</label>
+            <select id="operator_id" name="operator_id" required>
+                <option value="">-- Select Operator --</option>
+                {% for op in operators %}
+                <option value="{{ op.id }}" {% if operator_id|string == op.id|string %}selected{% endif %}>
+                    {{ op.name }} ({{ op.employee_id }})
+                </option>
+                {% endfor %}
+            </select>
+            <p style="font-size: 0.82rem; color: var(--grey-400); margin-top: 0.3rem;">
+                Note: The operator must be certified for the selected machine.
+                If they are not, the system will reject the assignment.
+            </p>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {{ "Update Work Order" if editing else "Create Work Order" }}
+            </button>
+            <a href="{{ url_for('work_orders') }}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/*
+    Optional enhancement: when a machine is selected, filter the operator
+    dropdown to show only certified operators. This uses a simple fetch call
+    to the API endpoint. The backend STILL validates certification on submit,
+    so this is just a convenience for the user.
+*/
+document.addEventListener("DOMContentLoaded", function() {
+    const machineSelect = document.getElementById("machine_id");
+    const operatorSelect = document.getElementById("operator_id");
+
+    // Store original operator options
+    const allOptions = Array.from(operatorSelect.options).map(opt => ({
+        value: opt.value,
+        text: opt.textContent,
+        selected: opt.selected
+    }));
+
+    machineSelect.addEventListener("change", function() {
+        const machineId = this.value;
+        if (!machineId) {
+            // Reset to show all operators
+            rebuildOptions(allOptions);
+            return;
+        }
+
+        fetch("/api/certified-operators/" + machineId)
+            .then(response => response.json())
+            .then(certified => {
+                const certifiedIds = certified.map(op => String(op.id));
+                const filtered = allOptions.filter(opt =>
+                    opt.value === "" || certifiedIds.includes(opt.value)
+                );
+
+                if (filtered.length <= 1) {
+                    // No certified operators found — show all with a warning
+                    rebuildOptions(allOptions);
+                } else {
+                    rebuildOptions(filtered);
+                }
+            })
+            .catch(() => {
+                // If fetch fails, keep all options (backend will still validate)
+                rebuildOptions(allOptions);
+            });
+    });
+
+    function rebuildOptions(options) {
+        const currentValue = operatorSelect.value;
+        operatorSelect.innerHTML = "";
+        options.forEach(opt => {
+            const option = document.createElement("option");
+            option.value = opt.value;
+            option.textContent = opt.text;
+            if (opt.value === currentValue) option.selected = true;
+            operatorSelect.appendChild(option);
+        });
+    }
+});
+</script>
+{% endblock %}
